@@ -1,10 +1,13 @@
 #include "filecacheserver.h"
 
-#define CACHE_LEN (size_t)204800
+#include <unistd.h>
+
+#define CACHE_LEN (size_t)(4096 * 16)
 #define MEM_VAL_BAD (size_t) ~0
 
 FileCacheServer::FileCacheServer() {
 	this->memory_region = memnew_arr(uint8_t, CACHE_LEN);
+	this->create_page_table();
 	singleton = this;
 }
 
@@ -39,6 +42,8 @@ void FileCacheServer::create_page_table() {
 						MEM_VAL_BAD));
 	}
 
+
+
 	this->page_table.free_regions[0] = Region(0, 50, MEM_VAL_BAD, MEM_VAL_BAD);
 }
 
@@ -47,9 +52,9 @@ size_t FileCacheServer::alloc_in_cache(size_t length) {
 	PageTable &page_table = this->page_table;
 	size_t curr_start_idx = 0, start_idx = 0, data_offset = 0;
 
-	size_t paged_length = length / 4096 + (length % 4096 ? 0 : 1);
+	size_t paged_length = length / 4096 + (length % 4096 == 0 ? 0 : 1);
 
-	if (page_table.pages.size() < (int)length)
+	if (page_table.pages.size() < (int)paged_length)
 		return MEM_VAL_BAD;
 
 	if (page_table.free_regions.size() == 1 && page_table.used_regions.size() == 0) {
@@ -174,29 +179,43 @@ void FileCacheServer::alloc_region(size_t start, size_t size, size_t *data_offse
 void FileCacheServer::thread_func(void *p_udata) {
 	FileCacheServer *fcs = (FileCacheServer *)p_udata;
 
-	while (!(fcs->exit_thread)) {
-	}
+	// while (!(fcs->exit_thread)) {
+	// 	sleep(10);
+	// }
+
+	auto x = fcs->alloc_in_cache(4096 * 2);
+	auto y = memnew_arr(uint8_t, 4096 * 2);
+	memset((void *)y, '!', 4096 * 2);
+
+	fcs->write_to_regions((void *)y, 4096 * 2, x);
+	fcs->free_regions(x);
+	memdelete_arr(y);
 }
 
-int FileCacheServer::write_to_regions(uint8_t *data, size_t length, size_t start_region) {
+int FileCacheServer::write_to_regions(void *data, size_t length, size_t start_region) {
 
 	size_t offset = 0;
 	Region curr_region = this->page_table.used_regions[start_region];
 
-	while (curr_region.next != MEM_VAL_BAD) {
+	while(true) {
 
-		curr_region = this->page_table.used_regions[curr_region.next];
 		size_t region_size = curr_region.start_page_idx + curr_region.size;
 
 		for (size_t i = curr_region.start_page_idx; i < region_size; ++i) {
-			memcpy(this->page_table.pages.ptrw()[i].memory_region, data + offset, 4096);
+			memcpy(this->page_table.pages.ptrw()[i].memory_region, (uint8_t *)data + offset, 4096);
 			this->page_table.pages.ptrw()[i].data_offset = offset;
 			this->page_table.pages.ptrw()[i].recently_used = true;
 			offset += 4096;
 		}
+
+		if(curr_region.next != MEM_VAL_BAD)
+			curr_region = this->page_table.used_regions[curr_region.next];
+		else break;
 	}
 	return 0;
 }
+
+
 
 _FileCacheServer::_FileCacheServer() {
 	singleton = this;

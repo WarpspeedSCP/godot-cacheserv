@@ -75,7 +75,7 @@ public:
 	int free_regions(size_t idx);
 
 	void alloc_region(size_t start, size_t size, size_t *data_offset);
-	int write_to_regions(uint8_t *data, size_t lenght, size_t start_region);
+	int write_to_regions(void *data, size_t lenght, size_t start_region);
 };
 
 class _FileCacheServer : public Object {
