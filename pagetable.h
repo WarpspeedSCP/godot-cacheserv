@@ -1,5 +1,35 @@
+/*************************************************************************/
+/*  pagetable.h                                                    */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef PAGETABLE_H
-#define  PAGETABLE_H
+#define PAGETABLE_H
 
 #include "core/vector.h"
 #include "core/object.h"
@@ -9,6 +39,8 @@
 #include "core/set.h"
 #include "core/variant.h"
 #include "core/ordered_hash_map.h"
+
+#include "cacheserv_defines.h"
 
 struct Page {
 
@@ -68,10 +100,20 @@ struct PageTable {
 	Vector<Page> pages;
 	OrderedHashMap<size_t, Region> used_regions;
 	OrderedHashMap<size_t, Region> free_regions;
+	uint8_t *memory_region = NULL;
 	size_t available_space;
 	size_t used_space;
 	size_t total_space;
 	size_t last_alloc_end;
+
+	void create();
+	size_t allocate(size_t length);
+	void free(size_t index);
+	void prepare_region(size_t start, size_t size, size_t *data_offset);
+
+	~PageTable();
 };
+
+
 
 #endif // !PAGETABLE_H

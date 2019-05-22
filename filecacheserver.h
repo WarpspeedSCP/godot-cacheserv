@@ -39,13 +39,13 @@
 #include "core/variant.h"
 #include "core/vector.h"
 
+#include "cacheserv_defines.h"
 #include "pagetable.h"
 
 class FileCacheServer : public Object {
 	GDCLASS(FileCacheServer, Object);
 
 	static FileCacheServer *singleton;
-	uint8_t *memory_region;
 	bool exit_thread;
 	PageTable page_table;
 	HashMap<RID, Region> regions;
@@ -72,9 +72,9 @@ public:
 	void create_page_table();
 	size_t alloc_in_cache(size_t length);
 	size_t extend_alloc_space(size_t region_idx, size_t byte_length);
-	int free_regions(size_t idx);
+	void free_regions(size_t idx);
 
-	void alloc_region(size_t start, size_t size, size_t *data_offset);
+	void prepare_region(size_t start, size_t size, size_t *data_offset);
 	int write_to_regions(void *data, size_t lenght, size_t start_region);
 };
 
