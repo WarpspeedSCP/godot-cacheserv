@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  pagetable.h                                                    */
+/*  file_access_unbuffered_unix.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,92 +28,79 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PAGETABLE_H
-#define PAGETABLE_H
+#ifndef FILE_ACCESS_UNBUF_UNIX_H
+#define FILE_ACCESS_UNBUF_UNIX_H
 
-#include "core/vector.h"
-#include "core/object.h"
-#include "core/os/thread.h"
-#include "core/os/mutex.h"
-#include "core/rid.h"
-#include "core/set.h"
-#include "core/variant.h"
-#include "core/ordered_hash_map.h"
+#include "core/os/file_access.h"
+#include "core/os/memory.h"
 
-#include "cacheserv_defines.h"
+#include "data_helpers.h"
 
-struct Page {
+#if defined(UNIX_ENABLED)
 
-	enum CachePolicy {
-		KEEP_FOREVER,
-		FIFO,
+#include <sys/stat.h>
+#include <unistd.h>
+
+class FileAccessUnbufferedUnix : public FileAccess {
+
+	enum CheckMode {
+		CHK_MODE_SEEK,
+		CHK_MODE_WRITE,
+		CHK_MODE_READ
 	};
 
-	uint8_t *memory_region;
-	uint64_t data_offset;
-	CachePolicy cache_policy;
-	uint8_t alloc_step;
-	bool recently_used;
-	bool used;
+	int fd;
+	int pos;
+	int flags;
+	struct stat st;
+	void check_errors() const;
+	void check_errors(int val, int expected, int mode);
+	mutable Error last_error;
+	String save_path;
+	String path;
+	String path_src;
 
-	Page() {}
+	static FileAccess *create_unbuf_unix();
 
-	Page(
-		uint8_t *i_memory_region,
-		uint64_t i_data_offset,
-		CachePolicy i_cache_policy = CachePolicy::FIFO
-	) : memory_region(i_memory_region),
-		data_offset(i_data_offset),
-		cache_policy(i_cache_policy),
-		alloc_step(0),
-		recently_used(false),
-		used(false) {}
+public:
 
+	Error unbuffered_open(const String &p_path, int p_mode_flags);
+	Error _open(const String &p_path, int p_mode_flags); ///< open a file
+	// Error open();
+	void close(); ///< close a file
+	bool is_open() const; ///< true when file is open
+
+	String get_path() const; /// returns the path for the current open file
+	String get_path_absolute() const; /// returns the absolute path for the current open file
+
+	void seek(size_t p_position); ///< seek to a given position
+	void seek_end(int64_t p_position = 0); ///< seek from the end of file
+	size_t get_position() const; ///< get position in the file
+
+	size_t get_len() const; ///< get size of the file
+
+	bool eof_reached() const; ///< reading passed EOF
+
+	uint8_t get_8() const; ///< get a byte
+	int get_buffer(uint8_t *p_dst, int p_length) const;
+	int get_buffer(uint8_t *p_dst, int p_length); // Use state info to catch errors.
+
+	Error get_error() const; ///< get last error
+
+	void flush();
+	void store_8(uint8_t p_byte); ///< store a byte
+	void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
+
+	bool file_exists(const String &p_path); ///< return true if a file exists
+
+	uint64_t _get_modified_time(const String &p_file);
+
+	Error _chmod(const String &p_path, int p_mod);
+
+	FileAccessUnbufferedUnix();
+	virtual ~FileAccessUnbufferedUnix();
 };
 
-struct Range {
-	size_t start;
-	size_t end;
-};
+#endif // if defined(UNIX_ENABLED)
 
-struct Region {
-	size_t start_page_idx; // First page's index.
-	size_t size; // Size in pages.
-	size_t prev;
-	size_t next; // In case the region is not contiguous.
-
-	Region() {}
-
-	Region(
-		size_t i_start_page_idx,
-		size_t i_size,
-		size_t i_prev,
-		size_t i_next
-	) : start_page_idx(i_start_page_idx),
-		size(i_size),
-		prev(i_prev),
-		next(i_next) {}
-
-};
-
-struct PageTable {
-	Vector<Page> pages;
-	OrderedHashMap<size_t, Region> used_regions;
-	OrderedHashMap<size_t, Region> free_regions;
-	uint8_t *memory_region = NULL;
-	size_t available_space;
-	size_t used_space;
-	size_t total_space;
-	size_t last_alloc_end;
-
-	void create();
-	size_t allocate(size_t length);
-	void free(size_t index);
-	void prepare_region(size_t start, size_t size, size_t *data_offset);
-
-	~PageTable();
-};
-
-
-
-#endif // !PAGETABLE_H
+#endif // FILE_ACCESS_UNBUF_UNIX_H

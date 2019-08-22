@@ -4,17 +4,18 @@
 #include "core/engine.h"
 #include "core/project_settings.h"
 
-static FileCacheServer *file_cache_server = NULL;
-static _FileCacheServer *_file_cache_server = NULL;
+static FileCacheManager *file_cache_manager = NULL;
+static _FileCacheManager *_file_cache_server = NULL;
 void register_cacheserv_types() {
-	file_cache_server = memnew(FileCacheServer);
-	file_cache_server->init();
-	_file_cache_server = memnew(_FileCacheServer);
-	ClassDB::register_class<_FileCacheServer>();
-	Engine::get_singleton()->add_singleton(Engine::Singleton("FileCacheServer", _FileCacheServer::get_singleton()));
+	file_cache_manager = memnew(FileCacheManager);
+	file_cache_manager->init();
+	_file_cache_server = memnew(_FileCacheManager);
+	ClassDB::register_class<_FileCacheManager>();
+	ClassDB::register_class<_FileAccessCached>();
+	Engine::get_singleton()->add_singleton(Engine::Singleton("FileCacheManager", _FileCacheManager::get_singleton()));
 }
 
 void unregister_cacheserv_types() {
-	if (file_cache_server) memdelete(file_cache_server);
+	if (file_cache_manager) memdelete(file_cache_manager);
 	if (_file_cache_server) memdelete(_file_cache_server);
 }
