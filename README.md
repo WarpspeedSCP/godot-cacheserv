@@ -7,5 +7,11 @@ This module was made as part of the Google Summer of Code 2019 program. The purp
 
 I've also made a [design document][2] that attempts to explain how everything works.
 
+# Current state
+
+As of the time of writing this document, the core functionality of this module is present. However, there are some bugs which must be resolved to make the module usable.
+
+The main blocking bug is with the read mechanism: the read operation may read fewer bytes than specified. I am still investigating the cause of this bug.
+
 [1]: https://github.com/WarpspeedSCP/godot/commits?author=WarpspeedSCP
 [2]: https://docs.google.com/document/d/1u5pnouYPkF44VpupJ3J_TUTM_RS5JVG2fOLJKAT9QU4
