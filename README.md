@@ -5,7 +5,7 @@ This module was made as part of the Google Summer of Code 2019 program. The purp
 
 [Here][1] is a list of all the commits I've made during the project time period.
 
-I've also made a [design document][2] that attempts to explain how everything works.
+I've also made a [technical document][2] that attempts to explain how everything works.
 
 # Current state
 
@@ -17,7 +17,7 @@ The main blocking bug is with the read mechanism: the read operation may read fe
 
 This is an engine module for the Godot engine, and is intended to be used in the engine as a drop-in module at compile-time.
 
-* First, retrieve the Godot engine source code from the Godot engine main (repo)[https://github.com/godotengine/godot].
+* First, retrieve the Godot engine source code from the Godot engine main [repo](https://github.com/godotengine/godot).
 * Navigate to the modules folder.
 * Execute the following command: ``` $ git clone https://github.com/WarpspeedSCP/godot-cacheserv cacheserv```
 
