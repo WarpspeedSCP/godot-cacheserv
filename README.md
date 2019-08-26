@@ -28,7 +28,7 @@ The module should now be present in the cacheserv subdirectory and will automati
 This module exposes one type intended for general use: the `FileAccessCached` class. This class provides a FileAccess style 
 frontend to the file cache server which does all the heavy file IO. `FileAccessCached` is available through both GDScript and C++. 
 
-In addition, two unbuffered versions of the FileAccess class are provided, one for unix, and the other for windows. Of these, the unbuffered unix implementation is complete while the unbuffered windows version is not. I intend to finish what remains within a week fo writing this.
+In addition, two unbuffered versions of the FileAccess class are provided, one for unix, and the other for windows. Of these, the unbuffered unix implementation is complete while the unbuffered windows version is not. I intend to finish what remains within a week of writing this.
 
 [1]: https://github.com/WarpspeedSCP/godot/commits?author=WarpspeedSCP
 [2]: https://docs.google.com/document/d/1u5pnouYPkF44VpupJ3J_TUTM_RS5JVG2fOLJKAT9QU4
