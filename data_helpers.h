@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  cache_info_table.h                                                   */
+/*  data_helpers.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -54,7 +54,7 @@ _FORCE_INLINE_ String itoh(size_t num) {
 
 typedef uint32_t data_descriptor;
 typedef uint32_t frame_id;
-typedef size_t page_id;
+typedef uint64_t page_id;
 
 struct CacheInfoTable;
 struct Frame;
@@ -71,7 +71,7 @@ struct DescriptorInfo {
 	RWLock *lock;
 	size_t offset;
 	size_t total_size;
-	uint64_t guid_prefix;
+	page_id guid_prefix;
 	int cache_policy;
 	int max_pages;
 	bool valid;

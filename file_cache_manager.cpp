@@ -35,7 +35,7 @@
 
 #include <time.h>
 
-#define RID_TO_DD(op) (size_t) rid op get_id() & 0x0000000000FFFFFF
+#define RID_TO_DD(op) (uint64_t) rid op get_id() & 0x0000000000FFFFFF
 #define RID_PTR_TO_DD RID_TO_DD(->)
 #define RID_REF_TO_DD RID_TO_DD(.)
 
@@ -52,7 +52,7 @@ FileCacheManager::FileCacheManager() {
 	used_space = 0;
 	total_space = CS_CACHE_SIZE;
 
-	for (size_t i = 0; i < CS_NUM_FRAMES; ++i) {
+	for (int i = 0; i < CS_NUM_FRAMES; ++i) {
 		frames.push_back(
 				memnew(Frame(memory_region + i * CS_PAGE_SIZE)));
 	}
@@ -200,7 +200,7 @@ RID FileCacheManager::add_data_source(RID rid, FileAccess *data_source, int cach
 	CRASH_COND(rid.is_valid() == false);
 	data_descriptor dd = RID_REF_TO_DD;
 
-	files[dd] = memnew(DescriptorInfo(data_source, (size_t)dd << 40, cache_policy));
+	files[dd] = memnew(DescriptorInfo(data_source, (page_id)dd << 40, cache_policy));
 	files[dd]->valid = true;
 
 	CRASH_COND(files[dd] == NULL);
@@ -262,13 +262,13 @@ void FileCacheManager::enqueue_flush(DescriptorInfo *desc_info) {
 	{
 		MutexLock ml(op_queue.mut);
 		for (List<CtrlOp>::Element *e = op_queue.queue.front(); e;) {
+			List<CtrlOp>::Element *next = e->next();
 			if (e->get().di == desc_info && e->get().type == CtrlOp::STORE) {
 				//  WARN_PRINTS("Deleting store op with offset: " + itoh(e->get().offset) + " frame: " + itoh(e->get().frame) + " file:  " + e->get().di->path)
 
-				List<CtrlOp>::Element *next = e->next();
 				e->erase();
-				e = next;
 			}
+			e = next;
 		}
 	}
 
@@ -281,11 +281,10 @@ void FileCacheManager::enqueue_flush_close(DescriptorInfo *desc_info) {
 	WARN_PRINTS("Enqueue flush & close op") {
 		MutexLock ml(op_queue.mut);
 		for (List<CtrlOp>::Element *e = op_queue.queue.front(); e;) {
+			List<CtrlOp>::Element *next = e->next();
 			if (e->get().di == desc_info) {
 
 				// Make it so the page frame mapping is removed as well.
-
-				List<CtrlOp>::Element *next = e->next();
 
 				if (e->get().type == CtrlOp::LOAD) {
 					DescriptorInfo *desc_info = e->get().di;
@@ -293,8 +292,8 @@ void FileCacheManager::enqueue_flush_close(DescriptorInfo *desc_info) {
 				}
 
 				e->erase();
-				e = next;
 			}
+			e = next;
 		}
 	}
 	op_queue.priority_push(CtrlOp(desc_info, CS_MEM_VAL_BAD, CS_MEM_VAL_BAD, CtrlOp::FLUSH_CLOSE));
@@ -958,7 +957,7 @@ bool FileCacheManager::get_page_or_do_paging_op(DescriptorInfo *desc_info, size_
 		// Find a free frame. last_used is only ever updated here, that could change...
 		// TODO: change this to something more efficient.
 		for (
-				size_t i = ((last_used + 1) % CS_NUM_FRAMES);
+				int i = ((last_used + 1) % CS_NUM_FRAMES);
 				i != last_used;
 				i = (i + 1) % 16) {
 

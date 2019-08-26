@@ -329,9 +329,9 @@ struct LRUComparator {
 			fcm(FileCacheManager::get_singleton()) {}
 
 	_FORCE_INLINE_ bool operator()(page_id p1, page_id p2) {
-		size_t a = fcm->frames[fcm->page_frame_map[p1]]->get_last_use();
+		page_id a = fcm->frames[fcm->page_frame_map[p1]]->get_last_use();
 
-		size_t b = fcm->frames[fcm->page_frame_map[p2]]->get_last_use();
+		page_id b = fcm->frames[fcm->page_frame_map[p2]]->get_last_use();
 
 		// Older pages have lower last_use values.
 		// This means that to sort by longest age we must compare for the least value of last_use.
