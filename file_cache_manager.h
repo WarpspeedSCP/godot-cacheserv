@@ -131,7 +131,7 @@ private:
 
 	void untrack_page(DescriptorInfo *desc_info, page_id curr_page) {
 		frame_id curr_frame = page_frame_map[curr_page];
-		WARN_PRINTS("Untracking page: " + itoh(curr_page) + " mapped to frame: " + itoh(curr_frame) + " in file:  " + desc_info->path)
+		// WARN_PRINTS("Untracking page: " + itoh(curr_page) + " mapped to frame: " + itoh(curr_frame) + " in file:  " + desc_info->path)
 
 		CS_GET_CACHE_POLICY_FN(cache_removal_policies, desc_info->cache_policy)(curr_page);
 

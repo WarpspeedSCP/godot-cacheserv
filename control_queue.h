@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-
 #ifndef CTRL_QUEUE_H
 #define CTRL_QUEUE_H
 
@@ -66,6 +65,13 @@ struct CtrlOp {
 			frame(frame),
 			offset(i_offset),
 			type(i_type) {}
+
+	String as_string() const {
+		return String("type: ") + (type == LOAD ? "LOAD" : type == STORE ? "STORE" : type == QUIT ? "QUIT" : type == FLUSH ? "FLUSH" : "FLUSH_CLOSE") +
+			   "\noffset: " + itoh(offset) +
+			   "\nframe: " + itoh(frame) +
+			   "\nfile: " + (di ? di->path : "NULL") + "\n";
+	}
 };
 
 class CtrlQueue {
@@ -87,13 +93,14 @@ private:
 
 			if (sig_quit) return CtrlOp();
 
-			// We only need to lock when accessing the queue.
-			MutexLock ml(mut);
-			// If the queue isn't empty, we can pop. otherwise, loop back around and wait for the queue to be filled.
-			if (!queue.empty()) {
-				CtrlOp op = queue.front()->get();
-				queue.pop_front();
-				return op;
+			{ // We only need to lock when accessing the queue.
+				MutexLock ml(mut);
+				// If the queue isn't empty, we can pop. otherwise, loop back around and wait for the queue to be filled.
+				if (!queue.empty()) {
+					CtrlOp op = queue.front()->get();
+					queue.pop_front();
+					return op;
+				}
 			}
 		}
 	}

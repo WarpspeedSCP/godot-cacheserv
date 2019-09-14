@@ -278,7 +278,8 @@ void FileCacheManager::enqueue_flush(DescriptorInfo *desc_info) {
 
 void FileCacheManager::enqueue_flush_close(DescriptorInfo *desc_info) {
 
-	WARN_PRINTS("Enqueue flush & close op") {
+	// WARN_PRINTS("Enqueue flush & close op")
+	{
 		MutexLock ml(op_queue.mut);
 		for (List<CtrlOp>::Element *e = op_queue.queue.front(); e;) {
 			List<CtrlOp>::Element *next = e->next();
@@ -323,7 +324,7 @@ void FileCacheManager::do_load_op(DescriptorInfo *desc_info, page_id curr_page, 
 				->set_used_size(used_size)
 				.set_ready_true(desc_info->ready_sem);
 	}
-	ERR_PRINTS(itoh(used_size) + " from offset " + itoh(offset) + " with page " + itoh(curr_page) + " mapped to frame " + itoh(curr_frame))
+	// ERR_PRINTS(itoh(used_size) + " from offset " + itoh(offset) + " with page " + itoh(curr_page) + " mapped to frame " + itoh(curr_frame))
 }
 
 void FileCacheManager::do_store_op(DescriptorInfo *desc_info, page_id curr_page, frame_id curr_frame, size_t offset) {
@@ -349,7 +350,7 @@ void FileCacheManager::do_store_op(DescriptorInfo *desc_info, page_id curr_page,
 		frames[curr_frame]->set_dirty_false(desc_info->dirty_sem, curr_frame);
 	}
 
-	ERR_PRINTS("End store op with file: " + desc_info->path + " page: " + itoh(curr_page) + " frame: " + itoh(curr_frame))
+	// ERR_PRINTS("End store op with file: " + desc_info->path + " page: " + itoh(curr_page) + " frame: " + itoh(curr_frame))
 }
 
 void FileCacheManager::flush(RID rid) {
@@ -1083,8 +1084,12 @@ void FileCacheManager::thread_func(void *p_udata) {
 		if (l.type == CtrlOp::QUIT)
 			break;
 
-		ERR_FAIL_COND(l.di == NULL);
-		if (l.di->valid == false) continue;
+		ERR_FAIL_COND_MSG(l.di == NULL, "Null file handle.")
+		if(l.di->valid == false) {
+			// ERR_PRINTS("Invalid file");
+			fcs.untrack_page(l.di, get_page_guid(l.di, l.offset, false));
+			continue;
+		}
 
 		page_id curr_page = get_page_guid(l.di, l.offset, false);
 		frame_id curr_frame = fcs.page_frame_map[curr_page];
