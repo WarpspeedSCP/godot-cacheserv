@@ -46,30 +46,22 @@
 #include "control_queue.h"
 #include "data_helpers.h"
 
-// #if defined(UNIX_ENABLED)
-// typedef FileAccessUnbufferedUnix PreferredFileAccessType;
-// #elif defined(WINDOWS_ENABLED)
-// typedef FileAccessUnbufferedWindows PreferredFileAccessType;
-// #endif
-
-/**
- *  A page is identified with a 64 bit GUID where the 24 most significant bits act as the
- *  differenciator. The 40 least significant bits represent the offset of the referred page
- *  in its associated data source.
- *
- *  For example-
- *
- * 	mask: 0x000000FFFFFFFFFF
- *  GUID: 0x21D30E000000401D
- *
- *  Here, the offset that this page GUID refers to is 0x401D.
- *  Its range offset is 0x21D30E0000000000.
- *
- *  This lets us distinguish between pages associated with different data sources.
- */
+//  A page is identified with a 64 bit GUID where the 24 most significant bits act as the
+//  differenciator. The 40 least significant bits represent the offset of the referred page
+//  in its associated data source.
+//
+//  For example-
+//
+// 	mask: 0x000000FFFFFFFFFF
+//  GUID: 0x21D30E000000401D
+//
+//  Here, the offset that this page GUID refers to is 0x401D.
+//  Its range offset is 0x21D30E0000000000.
+//
+//  This lets us distinguish between pages associated with different data sources.
 
 // Get the GUID of the current offset.
-// We can either get the GUID associated with an offset for the pageicular data source,
+// We can either get the GUID associated with an offset for the particular data source,
 // or query whether a page with that GUID is currently tracked.
 //
 // Returns-
@@ -117,17 +109,9 @@ public:
 private:
 	static void thread_func(void *p_udata);
 
-	// Register a file handle with the cache manager. This function takes a pointer to a FileAccess object,  so anything that implements the FileAccess API (from the file system, or from the network)  can act as a data source.
+	// Register a file handle with the cache manager. This function takes a pointer to a FileAccess object, so anything that implements the FileAccess API (from the file system or anywhere else) can act as a data source.
 	RID add_data_source(RID rid, FileAccess *data_source, int cache_policy);
 	void remove_data_source(RID rid);
-
-	void track_page(DescriptorInfo *desc_info, page_id curr_page, frame_id curr_frame) {
-
-	}
-
-	void replace_page(DescriptorInfo *desc_info, page_id curr_page) {
-
-	}
 
 	void untrack_page(DescriptorInfo *desc_info, page_id curr_page) {
 		frame_id curr_frame = page_frame_map[curr_page];
@@ -236,10 +220,10 @@ public:
 	// Returns an invalid RID if the file cannot be opened; this is similar to the normal FileAccess API.
 	RID open(const String &path, int p_mode, int cache_policy);
 
-	// Close the file but keep its contents in the cache. None of the state information is invalidated.
+	// Close the file but keep its contents in the cache. None of the state information (like current offset) is invalidated.
 	void close(RID rid);
 
-	// Invalidates the RID. it *will not* be valid after a call to this function.
+	// Invalidates the RID. The associated file will no longer be tracked.
 	void permanent_close(RID rid);
 
 
@@ -247,6 +231,7 @@ public:
 	size_t write(RID rid, const void *const data, size_t length);
 	size_t seek(RID rid, int64_t new_offset, int mode);
 
+	// utility method to dump the cache manager's current state as a variant.
 	Variant _get_state() {
 
 		List<uint32_t> keys;
