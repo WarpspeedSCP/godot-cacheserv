@@ -9,17 +9,15 @@ I've also made a [technical document][2] that attempts to explain how everything
 
 # Current state
 
-As of the time of writing this document, the core functionality of this module is present. However, there are some bugs which must be resolved to make the module usable.
-
-The main blocking bug is with the read mechanism: the read operation may read fewer bytes than specified. I am still investigating the cause of this bug.
+The module is currently in a working state but the design has many shortcomings that should be addressed. There are many chances for optimisation and the overall design may have to undergo more changed as well.
 
 # Installation
 
-This is an engine module for the Godot engine, and is intended to be used in the engine as a drop-in module at compile-time.
+This is a module for the Godot engine, and is intended to be used as a drop-in module at compile-time.
 
 * First, retrieve the Godot engine source code from the Godot engine main [repo](https://github.com/godotengine/godot).
-* Navigate to the modules folder.
-* Execute the following command: ``` $ git clone https://github.com/WarpspeedSCP/godot-cacheserv cacheserv```
+* Navigate to the modules folder: ```$ cd godot/modules```
+* Clone the module's repo: ``` $ git clone https://github.com/WarpspeedSCP/godot-cacheserv cacheserv```
 
 The module should now be present in the cacheserv subdirectory and will automatically be included when the engine is built through scons.
 
@@ -28,7 +26,7 @@ The module should now be present in the cacheserv subdirectory and will automati
 This module exposes one type intended for general use: the `FileAccessCached` class. This class provides a FileAccess style 
 frontend to the file cache server which does all the heavy file IO. `FileAccessCached` is available through both GDScript and C++. 
 
-In addition, two unbuffered versions of the FileAccess class are provided, one for unix, and the other for windows. Of these, the unbuffered unix implementation is complete while the unbuffered windows version is not. I intend to finish what remains within a week of writing this.
+In addition, two unbuffered versions of the FileAccess class are provided, one for unix, and the other for windows. Of these, the unbuffered unix implementation is complete while the unbuffered windows version is not.
 
 [1]: https://github.com/WarpspeedSCP/godot/commits?author=WarpspeedSCP
 [2]: https://docs.google.com/document/d/1u5pnouYPkF44VpupJ3J_TUTM_RS5JVG2fOLJKAT9QU4
